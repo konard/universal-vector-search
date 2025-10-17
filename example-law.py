@@ -6,6 +6,7 @@ import tensorflow_text as text
 import numpy as np
 from scipy.spatial import distance
 import time
+from token_calculator import enforce_token_limit
 
 # Start measuring time for loading model
 start_time = time.time()
@@ -41,6 +42,9 @@ for index, message in enumerate(messages):
     parts = prepared_message.partition(newline)
     messages[index] = parts[0] + '\n' + parts[1]
 
+# Enforce 512 token limit on all messages
+messages = enforce_token_limit(messages, max_tokens=512, warn=False)
+
 message_embeddings = embed(messages)
 
 # Print message embedding time
@@ -49,6 +53,9 @@ print(f"Messages embedded in {message_embedding_time} seconds")
 
 # Function to calculate cosine similarity
 def rank_messages(query):
+    # Enforce 512 token limit on query
+    query = enforce_token_limit(query, max_tokens=512, warn=True)
+
     query_embedding = embed([query])
     similarity_scores = 1 - distance.cdist(query_embedding, message_embeddings, "cosine")[0]
     ranked_indices = np.argsort(similarity_scores)[::-1]
