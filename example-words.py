@@ -6,6 +6,7 @@ import numpy as np
 from scipy.spatial import distance
 import time
 import re
+from token_calculator import enforce_token_limit
 
 def split_and_lower(text):
     words = re.findall(r'\b\w+\b', text)
@@ -43,9 +44,9 @@ for message in messages_dict:
 
     words = split_and_lower(message)
     words = [
-        w for w 
-        in words 
-        if 
+        w for w
+        in words
+        if
             w != 'деяние'
         and w != 'деяния'
         and w != 'преступление'
@@ -53,6 +54,8 @@ for message in messages_dict:
         and w != 'преступлении'
         and w != 'осужденного'
     ]
+    # Enforce 512 token limit on words (each word is embedded separately)
+    words = enforce_token_limit(words, max_tokens=512, warn=False)
     lines_embeddings = embed(words)
     message_lines_embeddings[message] = (lines_embeddings.numpy(), words)
 
@@ -62,6 +65,9 @@ print(f"Messages embedded in {message_embedding_time} seconds")
 
 # Function to calculate cosine similarity
 def rank_messages(query):
+    # Enforce 512 token limit on query
+    query = enforce_token_limit(query, max_tokens=512, warn=True)
+
     query_embedding = embed([query]).numpy()
     ranked_messages_scores = {}
 

@@ -8,6 +8,7 @@ import time
 import re
 import math
 from collections import defaultdict
+from token_calculator import enforce_token_limit
 
 def make_doc_words_count_dict(doc_words):
   """ 
@@ -134,6 +135,9 @@ for words in docs_words:
     # print('tfidf[грабеж]', tfidf.get('грабеж', None))
     # print('tfidf', tfidf)
 
+    # Enforce 512 token limit on words
+    words = enforce_token_limit(words, max_tokens=512, warn=False)
+
     lines_embeddings = embed(words)
     message_lines_embeddings[messages_dict[i]] = (lines_embeddings.numpy(), words, tfidf)
     i += 1
@@ -144,6 +148,9 @@ print(f"Messages embedded in {message_embedding_time} seconds")
 
 # Function to calculate cosine similarity
 def rank_messages(query):
+    # Enforce 512 token limit on query
+    query = enforce_token_limit(query, max_tokens=512, warn=True)
+
     query_embedding = embed([query]).numpy()
     ranked_messages_scores = {}
 

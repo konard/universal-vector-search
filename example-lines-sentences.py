@@ -6,6 +6,7 @@ import numpy as np
 from scipy.spatial import distance
 import time
 import nltk
+from token_calculator import enforce_token_limit
 nltk.download('punkt')
 
 # Start measuring time for loading model
@@ -46,6 +47,9 @@ for message in messages_dict:
     # Now you clean up sentences as you did in your second snippet
     sentences = [sentence.lower().strip() for sentence in sentences if sentence.strip()]
 
+    # Enforce 512 token limit on sentences
+    sentences = enforce_token_limit(sentences, max_tokens=512, warn=False)
+
     lines_embeddings = embed(sentences)
     message_lines_embeddings[message] = lines_embeddings.numpy()
 
@@ -55,6 +59,9 @@ print(f"Messages embedded in {message_embedding_time} seconds")
 
 # Function to calculate cosine similarity
 def rank_messages(query):
+    # Enforce 512 token limit on query
+    query = enforce_token_limit(query, max_tokens=512, warn=True)
+
     query_embedding = embed([query]).numpy()
     ranked_messages_scores = {}
 
